@@ -93,7 +93,7 @@ class Window:
     def refresh(cls) -> None:
         """現在取得しているハンドルから既に無効になっているものを取り除きます。
         """
-        for wd in cls.handlers.values():
+        for wd in tuple(cls.handlers.values()):
             if not wd:
                 cls.close(wd)
 
