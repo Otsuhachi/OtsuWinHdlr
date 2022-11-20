@@ -2,6 +2,7 @@ import subprocess
 import time
 
 from pathlib import Path
+from typing import Optional
 
 from otsutil import Timer
 from otsuvalidator import CPath
@@ -41,12 +42,21 @@ class Window:
             msg = f'ウィンドウ"{title}"のハンドルを取得できませんでした。'
             raise TimeoutError(msg)
 
+    def __bool__(self) -> bool:
+        if self.handler not in Window.handlers:
+            return False
+        return User32.IsWindowEnabled(self.handler)
+
+    def __str__(self) -> str:
+        return f'{self.handler}: {self.title}(Window)'
+
     def close(self) -> int:
         """ウィンドウを閉じます。
 
         Returns:
             int: 応答。
         """
+        time.sleep(0.05)
         res = User32.SendMessageW(self.handler, 0x0010, 0, 0)
         if self.handler in Window.handlers:
             del Window.handlers[self.handler]
@@ -60,8 +70,34 @@ class Window:
         """
         while self:
             time.sleep(span)
+        self.close()
 
-    def move(self, x: int, y: int) -> bool:
+    def move_window(self, x: int, y: int, n_width: int, n_height: int) -> bool:
+        """ウィンドウの左上座標と幅、高さを指定してウィンドウを再描画します。
+
+        Args:
+            x (int): 左上X座標。
+            y (int): 左上Y座標。
+            n_width (int): 幅。
+            n_height (int): 高さ
+
+        Returns:
+            bool: 成否
+        """
+        if not self:
+            self.close()
+            return False
+        return User32.MoveWindow(self.handler, x, y, n_width, n_height, True)
+
+    @classmethod
+    def refresh(cls) -> None:
+        """現在取得しているハンドルから既に無効になっているものを取り除きます。
+        """
+        for wd in cls.handlers.values():
+            if not wd:
+                cls.close(wd)
+
+    def set_position(self, x: int, y: int) -> bool:
         """ウィンドウを指定の座標に移動させます。
 
         Args:
@@ -72,19 +108,12 @@ class Window:
             bool: 成否。
         """
         if not self:
+            self.close()
             return False
         w, h = self.size
-        return User32.MoveWindow(self.__hdlr, x, y, w, h, True)
+        return User32.MoveWindow(self.handler, x, y, w, h, True)
 
-    @classmethod
-    def refresh(cls) -> None:
-        """現在取得しているハンドルから既に無効になっているものを取り除きます。
-        """
-        for wd in cls.handlers.values():
-            if not wd:
-                wd.close()
-
-    def resize(self, width: int, height: int) -> bool:
+    def set_size(self, width: int, height: int) -> bool:
         """ウィンドウを指定のサイズに変更します。
 
         Args:
@@ -95,9 +124,10 @@ class Window:
             bool: 成否。
         """
         if not self:
+            self.close()
             return False
         x, y, *_ = self.rect
-        return User32.MoveWindow(self.__hdlr, x, y, width, height, True)
+        return User32.MoveWindow(self.handler, x, y, width, height, True)
 
     @property
     def handler(self) -> int:
@@ -119,6 +149,7 @@ class Window:
         """ウィンドウの幅と高さ。
         """
         if not self:
+            self.close()
             return -1, -1
         left, top, right, bottom = self.rect
         return abs(left - right), abs(top - bottom)
@@ -129,20 +160,49 @@ class Window:
         """
         return User32.GetWindowTextW(self.handler)
 
-    def __bool__(self) -> bool:
-        if self.handler not in Window.handlers:
-            return False
-        return User32.IsWindowEnabled(self.__hdlr)
 
-    def __str__(self) -> str:
-        return f'{self.handler}: {self.title}(Window)'
+class RecycleBinFolder(Window):
+    """ごみ箱専用のExplorerに近いクラス。
+
+    Explorerとの違いはごみ箱しか開かない点とパスの移動を許可しない点にあります。
+    """
+
+    def __init__(self, timeout_seconds: int = 10, span_seconds: float = 0.05) -> None:
+        """ごみ箱のエクスプローラを開き、操作を行うインスタンスを生成します。
+
+        Args:
+            timeout_seconds (int, optional): インスタンス生成を失敗とみなすまでの秒数。 Defaults to 10.
+            span_seconds (float, optional): ウィンドウが存在するかの確認間隔秒数。 Defaults to 0.05.
+        """
+        self.__first_title = 'ごみ箱'
+        subprocess.Popen(['explorer', 'shell:RecycleBinFolder']).wait()
+        super().__init__(self.first_title, timeout_seconds, span_seconds)
+
+    def __bool__(self) -> bool:
+        if not super().__bool__():
+            return False
+        return User32.GetWindowTextW(self.handler) == self.first_title
+
+    @property
+    def first_title(self) -> str:
+        """インスタンス生成時のウィンドウタイトル。
+        """
+        return self.__first_title
 
 
 class Explorer(Window):
     """ウィンドウの中でも特にエクスプローラを操作するためのクラス。
     """
 
-    def __init__(self, path: Path | str, allow_chdir: bool = False, timeout_seconds: int = 10, span_seconds: float = 0.05) -> None:
+    def __init__(
+        self,
+        path: Path | str,
+        allow_chdir: bool = False,
+        timeout_seconds: int = 10,
+        span_seconds: float = 0.05,
+        *,
+        title: Optional[str] = None,
+    ) -> None:
         """pathのエクスプローラを開き、操作を行うインスタンスを生成します。
 
         Args:
@@ -150,19 +210,33 @@ class Explorer(Window):
             allow_chdir (bool, optional): エクスプローラのパス変更を許可するかどうか。 不許可の場合は移動した時点でWindow.closeが呼び出される。 Defaults to False.
             timeout_seconds (int, optional): インスタンス生成を失敗とみなすまでの秒数。 Defaults to 10.
             span_seconds (float, optional): ウィンドウが存在するかの確認間隔秒数。 Defaults to 0.05.
+            title (Optional[str], optional): ウィンドウタイトル。デスクトップなど、開くパスとタイトルが一致しない場合に指定します。
         """
         path = CPath(exist_only=True, path_type=Path.is_dir).validate(path)
         subprocess.Popen(['explorer', path]).wait()
-        super().__init__(path.name, timeout_seconds, span_seconds)
+        title = title if title else path.name
+        super().__init__(title, timeout_seconds, span_seconds)
         self.__allow_chdir = allow_chdir
         self.__first_title = self.title
 
     def __bool__(self) -> bool:
         if not super().__bool__():
             return False
-        if self.__allow_chdir:
+        if self.allow_chdir:
             return True
-        return User32.GetWindowTextW(self.handler) == self.__first_title
+        return User32.GetWindowTextW(self.handler) == self.first_title
 
     def __str__(self) -> str:
-        return f'{self.handler}: {self.title}(Explorer)'
+        return f'{self.handler}: {self.first_title}(Explorer)'
+
+    @property
+    def allow_chdir(self) -> bool:
+        """エクスプローラのパス変更を許可するか。
+        """
+        return self.__allow_chdir
+
+    @property
+    def first_title(self) -> str:
+        """インスタンス生成時のウィンドウタイトル。
+        """
+        return self.__first_title
