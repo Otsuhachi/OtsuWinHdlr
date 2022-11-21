@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "00c8dd54f307dd8dd20fc21edc10d100141a8c3bef2faafe3e03cbe1bcf15935"
+            "sha256": "8ad8842622a966ed545cb485e8f03ff57d23a4a09491b37bb77d81906ab3d14b"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.10"
+            "python_version": "3.11"
         },
         "sources": [
             {
@@ -29,9 +29,49 @@
             ],
             "index": "pypi",
             "version": "==1.2.1"
+        },
+        "otsuwinapi": {
+            "hashes": [
+                "sha256:3f9c5675a15b55bf171e92420ed6cbcc715568240f6c62f32041287bac9576c7",
+                "sha256:bf25aa064502fc0e4359871a0773adfb808f18105a66a9b13ad3d5b240147145"
+            ],
+            "index": "pypi",
+            "version": "==2022.11.21"
         }
     },
     "develop": {
+        "flake8": {
+            "hashes": [
+                "sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db",
+                "sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248"
+            ],
+            "index": "pypi",
+            "version": "==5.0.4"
+        },
+        "mccabe": {
+            "hashes": [
+                "sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325",
+                "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==0.7.0"
+        },
+        "pycodestyle": {
+            "hashes": [
+                "sha256:2c9607871d58c76354b697b42f5d57e1ada7d261c261efac224b664affdc5785",
+                "sha256:d1735fc58b418fd7c5f658d28d943854f8a849b01a5d0a1e6f3f3fdd0166804b"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==2.9.1"
+        },
+        "pyflakes": {
+            "hashes": [
+                "sha256:4579f67d887f804e67edb544428f264b7b24f435b263c4614f384135cea553d2",
+                "sha256:491feb020dca48ccc562a8c0cbe8df07ee13078df59813b83959cbdada312ea3"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==2.5.0"
+        },
         "yapf": {
             "hashes": [
                 "sha256:8fea849025584e486fd06d6ba2bed717f396080fd3cc236ba10cb97c4c51cf32",

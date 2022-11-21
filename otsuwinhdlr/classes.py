@@ -6,8 +6,7 @@ from typing import Optional
 
 from otsutil import Timer
 from otsuvalidator import CPath
-
-from .cfg import User32
+from otsuwinAPI import User32
 
 
 class Window:
