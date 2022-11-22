@@ -32,11 +32,11 @@
         },
         "otsuwinapi": {
             "hashes": [
-                "sha256:3f9c5675a15b55bf171e92420ed6cbcc715568240f6c62f32041287bac9576c7",
-                "sha256:bf25aa064502fc0e4359871a0773adfb808f18105a66a9b13ad3d5b240147145"
+                "sha256:1d4d63710972fad21e456b82abf19c2e088da156c068d1792ac2faa73e70e67a",
+                "sha256:d7d4fa3701c99644587bc1f1f24a5231227c671c82d68b9cd6bb2fc448a1e13c"
             ],
             "index": "pypi",
-            "version": "==2022.11.21"
+            "version": "==2022.11.23.1"
         }
     },
     "develop": {

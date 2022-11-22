@@ -6,7 +6,7 @@ from typing import Optional
 
 from otsutil import Timer
 from otsuvalidator import CPath
-from otsuwinAPI import User32
+from otsuwinAPI import Kernel32, User32
 
 
 class Window:
@@ -96,6 +96,26 @@ class Window:
             if not wd:
                 cls.close(wd)
 
+    def set_foreground(self, allow_attach: bool = False) -> bool:
+        """フォアグラウンドに移動させます。
+
+        allow_attachを有効にすることで成功率が上がりますが、予期せぬ不具合を招く可能性があります。
+
+        Args:
+            allow_attach (bool, optional): スレッドのアタッチを許可するか。
+
+        Returns:
+            bool: 成否。
+        """
+        if not allow_attach:
+            return User32.SetForegroundWindow(self.handler)
+        cur_thread_id = Kernel32.GetCurrentThreadId()
+        my_thread_id = User32.GetWindowThreadProcessId(self.handler)
+        User32.AttachThreadInput(cur_thread_id, my_thread_id, True)
+        res = User32.SetForegroundWindow(self.handler)
+        User32.AttachThreadInput(cur_thread_id, my_thread_id, False)
+        return res
+
     def set_position(self, x: int, y: int) -> bool:
         """ウィンドウを指定の座標に移動させます。
 
@@ -141,7 +161,7 @@ class Window:
         Returns:
             tuple[int, int, int, int]: (lx, ly, rx, ry)のタプル。
         """
-        return User32.GetWindowRect(self.handler)
+        return User32.GetWindowRectEz(self.handler)
 
     @property
     def size(self) -> tuple[int, int]:
@@ -157,7 +177,7 @@ class Window:
     def title(self) -> str:
         """ウィンドウのタイトル。
         """
-        return User32.GetWindowTextW(self.handler)
+        return User32.GetWindowTextWEz(self.handler)
 
 
 class RecycleBinFolder(Window):
@@ -180,7 +200,7 @@ class RecycleBinFolder(Window):
     def __bool__(self) -> bool:
         if not super().__bool__():
             return False
-        return User32.GetWindowTextW(self.handler) == self.first_title
+        return User32.GetWindowTextWEz(self.handler) == self.first_title
 
     @property
     def first_title(self) -> str:
@@ -223,7 +243,7 @@ class Explorer(Window):
             return False
         if self.allow_chdir:
             return True
-        return User32.GetWindowTextW(self.handler) == self.first_title
+        return User32.GetWindowTextWEz(self.handler) == self.first_title
 
     def __str__(self) -> str:
         return f'{self.handler}: {self.first_title}(Explorer)'
