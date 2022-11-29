@@ -7,6 +7,7 @@ from typing import Optional
 from otsutil import Timer
 from otsuvalidator import CPath
 from otsuwinAPI import Kernel32, User32
+from otsuwinAPI.constants import nCmdShow
 
 
 class Window:
@@ -27,6 +28,7 @@ class Window:
         """
         hdlr = 0
         handlers = Window.handlers
+        self.__max_min = False
         for _ in Timer(seconds=timeout_seconds).wiggle_begin(span_seconds):
             if (hdlr := User32.FindWindowExW(None, None, None, title)) != 0:
                 if hdlr in handlers:
@@ -71,6 +73,28 @@ class Window:
             time.sleep(span)
         self.close()
 
+    def maximized(self) -> bool:
+        """ウィンドウを最大化します。
+
+        Returns:
+            bool: 以前の表示状態。
+        """
+        self.__max_min = True
+        return User32.ShowWindow(self.handler, nCmdShow.SW_SHOWMAXIMIZED)
+
+    def minimize(self, keep_active: bool = False) -> bool:
+        """ウィンドウを最小化します。
+
+        Args:
+            keep_active (bool, optional): ウィンドウのアクティブを継続するか。 Defaults to False.
+
+        Returns:
+            bool: 以前の表示状態。
+        """
+        self.__max_min = True
+        value = nCmdShow.SW_SHOWMINIMIZED if keep_active else nCmdShow.SW_MINIMIZE
+        return User32.ShowWindow(self.handler, value)
+
     def move_window(self, x: int, y: int, n_width: int, n_height: int) -> bool:
         """ウィンドウの左上座標と幅、高さを指定してウィンドウを再描画します。
 
@@ -87,6 +111,17 @@ class Window:
             self.close()
             return False
         return User32.MoveWindow(self.handler, x, y, n_width, n_height, True)
+
+    def normal(self) -> bool:
+        """ウィンドウをアクティブ化して表示します。
+
+        最大化、または最小化されたウィンドウに対して使用した場合、元のサイズと位置を復元します。
+
+        Returns:
+            bool: 以前の表示状態。
+        """
+        value = nCmdShow.SW_RESTORE if self.__max_min else nCmdShow.SW_NORMAL
+        return User32.ShowWindow(self.handler, value)
 
     @classmethod
     def refresh(cls) -> None:
