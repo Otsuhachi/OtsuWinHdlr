@@ -11,17 +11,16 @@ from otsuwinAPI.constants import nCmdShow
 
 
 class Window:
-    """ウィンドウを操作するためのクラスです。
-    """
-    handlers: dict[int, 'Window'] = {}
+    """ウィンドウを操作するためのクラスです。"""
 
-    def __init__(self, title: str, timeout_seconds: int = 10, span_seconds: float = 0.05) -> None:
+    handlers: dict[int, "Window"] = {}
+
+    def __init__(self, title: str, timeout_seconds: int = 10) -> None:
         """ウィンドウのタイトルからウィンドウを操作するためのインスタンスを生成します。
 
         Args:
             title (str): ウィンドウのタイトル。
             timeout_seconds (int, optional): インスタンス生成を失敗とみなすまでの秒数。 Defaults to 10.
-            span_seconds (float, optional): ウィンドウが存在するかの確認間隔秒数。 Defaults to 0.05.
 
         Raises:
             TimeoutError: timeout_seconds秒内に発見できなかった場合に投げられます。
@@ -29,7 +28,7 @@ class Window:
         hdlr = 0
         handlers = Window.handlers
         self.__max_min = False
-        for _ in Timer(seconds=timeout_seconds).wiggle_begin(span_seconds):
+        for _ in Timer(seconds=timeout_seconds).wiggle_begin():
             if (hdlr := User32.FindWindowExW(None, None, None, title)) != 0:
                 if hdlr in handlers:
                     Window.refresh()
@@ -49,7 +48,7 @@ class Window:
         return User32.IsWindowEnabled(self.handler)
 
     def __str__(self) -> str:
-        return f'{self.handler}: {self.title}(Window)'
+        return f"{self.handler}: {self.title}(Window)"
 
     def close(self) -> int:
         """ウィンドウを閉じます。
@@ -125,8 +124,7 @@ class Window:
 
     @classmethod
     def refresh(cls) -> None:
-        """現在取得しているハンドルから既に無効になっているものを取り除きます。
-        """
+        """現在取得しているハンドルから既に無効になっているものを取り除きます。"""
         for wd in tuple(cls.handlers.values()):
             if not wd:
                 cls.close(wd)
@@ -185,8 +183,7 @@ class Window:
 
     @property
     def handler(self) -> int:
-        """ウィンドウハンドラ。
-        """
+        """ウィンドウハンドラ。"""
         return self.__hdlr
 
     @property
@@ -200,8 +197,7 @@ class Window:
 
     @property
     def size(self) -> tuple[int, int]:
-        """ウィンドウの幅と高さ。
-        """
+        """ウィンドウの幅と高さ。"""
         if not self:
             self.close()
             return -1, -1
@@ -210,8 +206,7 @@ class Window:
 
     @property
     def title(self) -> str:
-        """ウィンドウのタイトル。
-        """
+        """ウィンドウのタイトル。"""
         return User32.GetWindowTextWEz(self.handler)
 
 
@@ -221,16 +216,15 @@ class RecycleBinFolder(Window):
     Explorerとの違いはごみ箱しか開かない点とパスの移動を許可しない点にあります。
     """
 
-    def __init__(self, timeout_seconds: int = 10, span_seconds: float = 0.05) -> None:
+    def __init__(self, timeout_seconds: int = 10) -> None:
         """ごみ箱のエクスプローラを開き、操作を行うインスタンスを生成します。
 
         Args:
             timeout_seconds (int, optional): インスタンス生成を失敗とみなすまでの秒数。 Defaults to 10.
-            span_seconds (float, optional): ウィンドウが存在するかの確認間隔秒数。 Defaults to 0.05.
         """
-        self.__first_title = 'ごみ箱'
-        subprocess.Popen(['explorer', 'shell:RecycleBinFolder']).wait()
-        super().__init__(self.first_title, timeout_seconds, span_seconds)
+        self.__first_title = "ごみ箱"
+        subprocess.Popen(["explorer", "shell:RecycleBinFolder"]).wait()
+        super().__init__(self.first_title, timeout_seconds)
 
     def __bool__(self) -> bool:
         if not super().__bool__():
@@ -239,21 +233,18 @@ class RecycleBinFolder(Window):
 
     @property
     def first_title(self) -> str:
-        """インスタンス生成時のウィンドウタイトル。
-        """
+        """インスタンス生成時のウィンドウタイトル。"""
         return self.__first_title
 
 
 class Explorer(Window):
-    """ウィンドウの中でも特にエクスプローラを操作するためのクラス。
-    """
+    """ウィンドウの中でも特にエクスプローラを操作するためのクラス。"""
 
     def __init__(
         self,
         path: Path | str,
         allow_chdir: bool = False,
         timeout_seconds: int = 10,
-        span_seconds: float = 0.05,
         *,
         title: Optional[str] = None,
     ) -> None:
@@ -263,13 +254,12 @@ class Explorer(Window):
             path (Path | str): 操作したいエクスプローラのパス。存在するフォルダのみ受付。
             allow_chdir (bool, optional): エクスプローラのパス変更を許可するかどうか。 不許可の場合は移動した時点でWindow.closeが呼び出される。 Defaults to False.
             timeout_seconds (int, optional): インスタンス生成を失敗とみなすまでの秒数。 Defaults to 10.
-            span_seconds (float, optional): ウィンドウが存在するかの確認間隔秒数。 Defaults to 0.05.
             title (Optional[str], optional): ウィンドウタイトル。デスクトップなど、開くパスとタイトルが一致しない場合に指定します。
         """
         path = CPath(exist_only=True, path_type=Path.is_dir).validate(path)
-        subprocess.Popen(['explorer', path]).wait()
+        subprocess.Popen(["explorer", path]).wait()
         title = title if title else path.name
-        super().__init__(title, timeout_seconds, span_seconds)
+        super().__init__(title, timeout_seconds)
         self.__allow_chdir = allow_chdir
         self.__first_title = self.title
 
@@ -281,16 +271,14 @@ class Explorer(Window):
         return User32.GetWindowTextWEz(self.handler) == self.first_title
 
     def __str__(self) -> str:
-        return f'{self.handler}: {self.first_title}(Explorer)'
+        return f"{self.handler}: {self.first_title}(Explorer)"
 
     @property
     def allow_chdir(self) -> bool:
-        """エクスプローラのパス変更を許可するか。
-        """
+        """エクスプローラのパス変更を許可するか。"""
         return self.__allow_chdir
 
     @property
     def first_title(self) -> str:
-        """インスタンス生成時のウィンドウタイトル。
-        """
+        """インスタンス生成時のウィンドウタイトル。"""
         return self.__first_title

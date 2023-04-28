@@ -1,7 +1,7 @@
 [[source]]
-name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
+name = "pypi"
 
 [packages]
 otsutil = "*"
@@ -9,8 +9,8 @@ otsuvalidator = "*"
 otsuwinapi = "*"
 
 [dev-packages]
+black = "*"
 flake8 = "*"
-yapf = "*"
 
 [requires]
 python_version = "3.11"
