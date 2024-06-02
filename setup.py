@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="otsuwinhdlr",
-    version="1.0.1.311",
+    version="1.0.2.311",
     url="https://github.com/Otsuhachi/OtsuWinHdlr",
     description="ウィンドウやエクスプローラのハンドル取得、操作を補助します。",
     author="Otsuhachi",
@@ -14,4 +14,5 @@ setup(
         "otsuvalidator",
         "otsuwinAPI",
     ],
+    python_requires=">=3.11",
 )

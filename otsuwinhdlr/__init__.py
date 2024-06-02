@@ -1,7 +1,7 @@
 __all__ = (
-    'Explorer',
-    'RecycleBinFolder',
-    'Window',
+    "Explorer",
+    "RecycleBinFolder",
+    "Window",
 )
 
 from .classes import Explorer, RecycleBinFolder, Window

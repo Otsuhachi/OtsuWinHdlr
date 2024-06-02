@@ -50,6 +50,41 @@ class Window:
     def __str__(self) -> str:
         return f"{self.handler}: {self.title}(Window)"
 
+    @property
+    def handler(self) -> int:
+        """ウィンドウハンドラ。"""
+        return self.__hdlr
+
+    @property
+    def rect(self) -> tuple[int, int, int, int]:
+        """ウィンドウの左上と右下の座標。
+
+        Returns:
+            tuple[int, int, int, int]: (lx, ly, rx, ry)のタプル。
+        """
+        return User32.GetWindowRectEz(self.handler)
+
+    @property
+    def size(self) -> tuple[int, int]:
+        """ウィンドウの幅と高さ。"""
+        if not self:
+            self.close()
+            return -1, -1
+        left, top, right, bottom = self.rect
+        return abs(left - right), abs(top - bottom)
+
+    @property
+    def title(self) -> str:
+        """ウィンドウのタイトル。"""
+        return User32.GetWindowTextWEz(self.handler)
+
+    @classmethod
+    def refresh(cls) -> None:
+        """現在取得しているハンドルから既に無効になっているものを取り除きます。"""
+        for wd in tuple(cls.handlers.values()):
+            if not wd:
+                wd.close()
+
     def close(self) -> int:
         """ウィンドウを閉じます。
 
@@ -122,13 +157,6 @@ class Window:
         value = nCmdShow.SW_RESTORE if self.__max_min else nCmdShow.SW_NORMAL
         return User32.ShowWindow(self.handler, value)
 
-    @classmethod
-    def refresh(cls) -> None:
-        """現在取得しているハンドルから既に無効になっているものを取り除きます。"""
-        for wd in tuple(cls.handlers.values()):
-            if not wd:
-                cls.close(wd)
-
     def set_foreground(self, allow_attach: bool = False) -> bool:
         """フォアグラウンドに移動させます。
 
@@ -180,34 +208,6 @@ class Window:
             return False
         x, y, *_ = self.rect
         return User32.MoveWindow(self.handler, x, y, width, height, True)
-
-    @property
-    def handler(self) -> int:
-        """ウィンドウハンドラ。"""
-        return self.__hdlr
-
-    @property
-    def rect(self) -> tuple[int, int, int, int]:
-        """ウィンドウの左上と右下の座標。
-
-        Returns:
-            tuple[int, int, int, int]: (lx, ly, rx, ry)のタプル。
-        """
-        return User32.GetWindowRectEz(self.handler)
-
-    @property
-    def size(self) -> tuple[int, int]:
-        """ウィンドウの幅と高さ。"""
-        if not self:
-            self.close()
-            return -1, -1
-        left, top, right, bottom = self.rect
-        return abs(left - right), abs(top - bottom)
-
-    @property
-    def title(self) -> str:
-        """ウィンドウのタイトル。"""
-        return User32.GetWindowTextWEz(self.handler)
 
 
 class RecycleBinFolder(Window):
