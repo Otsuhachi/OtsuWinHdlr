@@ -94,7 +94,7 @@ class Window:
         time.sleep(0.05)
         res = User32.SendMessageW(self.handler, 0x0010, 0, 0)
         if self.handler in Window.handlers:
-            del Window.handlers[self.handler]
+            Window.handlers.pop(self.handler, None)
         return res
 
     def join(self, span: float = 0.05) -> None:
