@@ -4,4 +4,4 @@ __all__ = (
     "Window",
 )
 
-from .classes import Explorer, RecycleBinFolder, Window
+from .class_ import Explorer, RecycleBinFolder, Window
