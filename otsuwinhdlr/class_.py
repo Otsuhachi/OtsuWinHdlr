@@ -290,13 +290,18 @@ class RecycleBinFolder(Window):
     Explorerとの違いはごみ箱しか開かない点とパスの移動を許可しない点。
     """
 
-    def __init__(self, timeout_seconds: float = 10) -> None:
+    def __init__(self, timeout_seconds: float = 10,suffix:str|None='エクスプローラー') -> None:
         """ごみ箱の操作を行うインスタンスを生成する。
+
+        suffixを有効にした場合、"{title} - {suffix}"というウィンドウ名を検索する。
 
         Args:
             timeout_seconds (float, optional): 失敗とみなすまでの秒数。 Defaults to 10.
+            suffix (str | None, optional): 末尾に付けるアプリケーション名。 Defaults to 'エクスプローラー'.
         """
         title = "ごみ箱"
+        if suffix is not None and suffix.strip()!='':
+            title=f'{title} - {suffix}'
         try:
             super().__init__(title, 1)
             return
@@ -324,17 +329,23 @@ class Explorer(Window):
         timeout_seconds: float = 10,
         *,
         title: str | None = None,
+        suffix:str|None="エクスプローラー"
     ) -> None:
         """pathの操作を行うインスタンスを生成する。
+
+        suffixを有効にした場合、"{title} - {suffix}"というウィンドウ名を検索する。
 
         Args:
             path (pathLike): 操作したいエクスプローラのパス。存在するフォルダのみ受付。
             allow_chdir (bool, optional): エクスプローラのパス変更を許可するかどうか。 不許可の場合は移動した時点でWindow.closeが呼び出される。 Defaults to False.
             timeout_seconds (float, optional): インスタンス生成を失敗とみなすまでの秒数。 Defaults to 10.
             title (str | None, optional): ウィンドウタイトル。デスクトップなど、開くパスとタイトルが一致しない場合に指定する。
+            suffix (str | None, optional): 末尾に付けるアプリケーション名。 Defaults to 'エクスプローラー'.
         """
         path = CPath(exist_only=True, path_type=Path.is_dir).validate(path)
         title = title if title else path.name
+        if suffix is not None and suffix.strip()!='':
+            title=f'{title} - {suffix}'
         try:
             super().__init__(title, 1)
         except:
