@@ -18,11 +18,11 @@
     "default": {
         "otsutil": {
             "hashes": [
-                "sha256:bf8c3bc7eddb40011ec5552bd186665a5092ea3f87dea027f5cdbbd1803ee924"
+                "sha256:7c0a01ba68230758673e4caf57bcd55128d401f16f9fb457c11de7659371b06b"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.1.2.310"
+            "version": "==1.2.2.310"
         },
         "otsuvalidator": {
             "hashes": [
@@ -35,11 +35,11 @@
         },
         "otsuwinapi": {
             "hashes": [
-                "sha256:3886ccabc4966b83f54f0f6d3762273f4f1d424f1fd1ecce1ef99ecac1ea2e38"
+                "sha256:7a525ee1dd22b63e1d84fc6e6e3f7f03c93002480ec77d3b9576b1d54ef142f3"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.11'",
-            "version": "==1.4.0.311"
+            "version": "==1.5.0.311"
         }
     },
     "develop": {}
